@@ -1,0 +1,9 @@
+{
+  "name": "AI Resume Job Matcher",
+  "short_name": "Resume Matcher",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f4f7fb",
+  "theme_color": "#2563eb",
+  "description": "AI powered resume and job matching app"
+}
