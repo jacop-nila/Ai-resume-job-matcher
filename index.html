@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>AI Resume Job Matcher</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2563eb">
+
+<style>
+
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f7fb;
+  margin: 0;
+  padding: 20px;
+}
+
+.container {
+  max-width: 850px;
+  margin: auto;
+}
+
+h1 {
+  color: #172554;
+}
+
+.card {
+  background: white;
+  padding: 20px;
+  margin: 15px 0;
+  border-radius: 12px;
+  box-shadow: 0 3px 12px #0002;
+}
+
+input,
+select,
+textarea,
+button {
+  width: 100%;
+  padding: 13px;
+  margin-top: 10px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+input,
+select,
+textarea {
+  border: 1px solid #ccc;
+  background: white;
+}
+
+textarea {
+  height: 180px;
+  resize: vertical;
+}
+
+button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.score {
+  font-size: 36px;
+  font-weight: bold;
+  color: #2563eb;
+}
+
+.match {
+  color: green;
+  margin: 8px;
+}
+
+.missing {
+  color: red;
+  margin: 8px;
+}
+
+.box {
+  background: #eff6ff;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.bias {
+  background: #ecfdf5;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.small {
+  color: #666;
+  font-size: 14px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🤖 AI Resume-Job Matcher</h1>
+
+<div class="card">
+
+<h2>📄 Resume</h2>
+
+<p class="small">
+You can upload a .txt resume or paste the resume below.
+</p>
+
+<input
+  type="file"
+  id="resumeFile"
+  accept=".txt"
+  onchange="readFile()"
+>
+
+<p id="fileName">
+No file selected
+</p>
+
+<textarea
+  id="resumeText"
+  placeholder="Or paste your resume here..."
+></textarea>
+
+<h2>💼 Select Job</h2>
+
+<select id="job">
+
+<option value="0">
+Frontend Developer
+</option>
+
+<option value="1">
+Python Developer
+</option>
+
+<option value="2">
+Data Analyst
+</option>
+
+</select>
+
+<button onclick="checkMatch()">
+Check Match
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>📊 AI Matching Report</h2>
+
+<div id="result">
+
+Enter or upload a resume and select a job.
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const jobs = [
+
+{
+  name: "Frontend Developer",
+  skills: [
+    "html",
+    "css",
+    "javascript",
+    "react",
+    "git"
+  ]
+},
+
+{
+  name: "Python Developer",
+  skills: [
+    "python",
+    "sql",
+    "git",
+    "machine learning"
+  ]
+},
+
+{
+  name: "Data Analyst",
+  skills: [
+    "python",
+    "sql",
+    "data analysis",
+    "communication"
+  ]
+}
+
+];
+
+function readFile() {
+
+  const file =
+    document.getElementById("resumeFile").files[0];
+
+  if (!file) {
+    return;
+  }
+
+  document.getElementById("fileName").innerText =
+    "Selected: " + file.name;
+
+  const reader = new FileReader();
+
+  reader.onload = function(event) {
+
+    document.getElementById("resumeText").value =
+      event.target.result;
+
+  };
+
+  reader.readAsText(file);
+
+}
+
+function checkMatch() {
+
+  const resume =
+    document.getElementById("resumeText")
+    .value
+    .toLowerCase();
+
+  const jobIndex =
+    document.getElementById("job").value;
+
+  const job =
+    jobs[jobIndex];
+
+  if (!resume.trim()) {
+
+    alert(
+      "Please upload or paste a resume first."
+    );
+
+    return;
+  }
+
+  let matched = [];
+  let missing = [];
+
+  job.skills.forEach(function(skill) {
+
+    if (resume.includes(skill)) {
+
+      matched.push(skill);
+
+    } else {
+
+      missing.push(skill);
+
+    }
+
+  });
+
+  let score = Math.round(
+    (matched.length / job.skills.length) * 100
+  );
+
+  let output = "";
+
+  output += `
+    <div class="score">
+      ${score}% Match
+    </div>
+  `;
+
+  output += `
+    <h3>💼 Job: ${job.name}</h3>
+  `;
+
+  output += `
+    <h3>✅ Matched Skills</h3>
+  `;
+
+  if (matched.length > 0) {
+
+    output += "<ul>";
+
+    matched.forEach(function(skill) {
+
+      output += `
+        <li class="match">
+          <b>${skill}</b> — Found in resume.
+        </li>
+      `;
+
+    });
+
+    output += "</ul>";
+
+  } else {
+
+    output += "<p>No matching skills found.</p>";
+
+  }
+
+  output += `
+    <h3>❌ Missing Skills</h3>
+  `;
+
+  if (missing.length > 0) {
+
+    output += "<ul>";
+
+    missing.forEach(function(skill) {
+
+      output += `
+        <li class="missing">
+          <b>${skill}</b> — Not found in resume.
+        </li>
+      `;
+
+    });
+
+    output += "</ul>";
+
+  } else {
+
+    output +=
+      "<p>No major skill gaps found.</p>";
+
+  }
+
+  output += `
+    <h3>🔎 Evidence</h3>
+
+    <div class="box">
+
+      Resume evidence detected for:
+
+      <b>
+        ${matched.join(", ") || "None"}
+      </b>
+
+    </div>
+  `;
+
+  output += `
+    <h3>🎯 Interview Questions</h3>
+
+    <ol>
+  `;
+
+  if (missing.length > 0) {
+
+    missing.forEach(function(skill) {
+
+      output += `
+        <li>
+          Explain your experience with
+          <b>${skill}</b>.
+        </li>
+      `;
+
+    });
+
+  } else {
+
+    output += `
+      <li>Describe your strongest project.</li>
+      <li>How did you solve a difficult problem?</li>
+      <li>How do you work with a team?</li>
+    `;
+
+  }
+
+  output += "</ol>";
+
+  output += `
+    <h3>🛡️ Bias Check</h3>
+
+    <div class="bias">
+
+      Matching is based only on
+      job-related skills.
+
+      Age, gender, religion, race and
+      other protected attributes are
+      not used for scoring.
+
+    </div>
+  `;
+
+  document.getElementById("result")
+    .innerHTML = output;
+
+}
+
+</script>
+
+<script>
+
+if ("serviceWorker" in navigator) {
+
+  navigator.serviceWorker.register("./sw.js")
+    .then(() => {
+
+      console.log(
+        "PWA Service Worker registered"
+      );
+
+    })
+    .catch(error => {
+
+      console.log(
+        "Service Worker error:",
+        error
+      );
+
+    });
+
+}
+
+</script>
+
+</body>
+  </html>
